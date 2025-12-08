@@ -1,0 +1,9 @@
+include README.md
+include REDDIT.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+recursive-include py *.py
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.backup

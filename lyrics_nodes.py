@@ -360,15 +360,21 @@ class AceStepOpenAI_Lyrics:
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "OpenAI API Key"}),
                 "model": ([
+                    "gpt-5.1",
+                    "gpt-5.1-codex",
+                    "gpt-5",
+                    "gpt-5-pro",
                     "gpt-4o",
                     "gpt-4o-mini",
                     "gpt-4-turbo",
-                    "gpt-4-turbo-preview",
                     "gpt-4",
-                    "gpt-3.5-turbo",
-                    "gpt-3.5-turbo-16k"
+                    "o3",
+                    "o3-mini",
+                    "o1",
+                    "o1-mini"
                 ], {"default": "gpt-4o"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
 
@@ -377,11 +383,11 @@ class AceStepOpenAI_Lyrics:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Lyrics"
 
-    def generate(self, text, api_key, model, max_tokens):
+    def generate(self, text, api_key, model, max_tokens, seed):
         if not api_key:
             return ("Error: API key not provided",)
 
-        prompt = f"{text}\n\nGenerate song lyrics for this prompt:"
+        prompt = f"{text}\n\nGenerate song lyrics for this prompt:\n[Seed: {seed}]"
         
         try:
             headers = {
@@ -418,14 +424,18 @@ class AceStepClaude_Lyrics:
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Anthropic API Key"}),
                 "model": ([
+                    "claude-opus-4.5",
+                    "claude-opus-4.1",
+                    "claude-sonnet-4.5",
+                    "claude-sonnet-4",
+                    "claude-haiku-4.5",
+                    "claude-haiku-3.5",
                     "claude-3-5-sonnet-20241022",
                     "claude-3-5-haiku-20241022",
-                    "claude-3-opus-20250219",
-                    "claude-3-sonnet-20240229",
-                    "claude-3-haiku-20240307",
-                    "claude-2.1"
-                ], {"default": "claude-3-5-sonnet-20241022"}),
+                    "claude-3-opus-20250219"
+                ], {"default": "claude-opus-4.5"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
 
@@ -434,11 +444,11 @@ class AceStepClaude_Lyrics:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Lyrics"
 
-    def generate(self, text, api_key, model, max_tokens):
+    def generate(self, text, api_key, model, max_tokens, seed):
         if not api_key:
             return ("Error: API key not provided",)
 
-        prompt = f"{text}\n\nGenerate song lyrics for this prompt:"
+        prompt = f"{text}\n\nGenerate song lyrics for this prompt:\n[Seed: {seed}]"
         
         try:
             headers = {
@@ -478,9 +488,11 @@ class AceStepPerplexity_Lyrics:
                     "sonar",
                     "sonar-pro",
                     "sonar-reasoning",
-                    "sonar-reasoning-pro"
+                    "sonar-reasoning-pro",
+                    "sonar-deep-research"
                 ], {"default": "sonar"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
 
@@ -489,11 +501,11 @@ class AceStepPerplexity_Lyrics:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Lyrics"
 
-    def generate(self, text, api_key, model, max_tokens):
+    def generate(self, text, api_key, model, max_tokens, seed):
         if not api_key:
             return ("Error: API key not provided",)
 
-        prompt = f"{text}\n\nGenerate song lyrics for this prompt:"
+        prompt = f"{text}\n\nGenerate song lyrics for this prompt:\n[Seed: {seed}]"
         
         try:
             headers = {
@@ -530,14 +542,20 @@ class AceStepCohere_Lyrics:
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Cohere API Key"}),
                 "model": ([
+                    "command-a-03-2025",
+                    "command-r7b-12-2024",
                     "command-r-plus-08-2024",
                     "command-r-08-2024",
-                    "command-r7b-12-2024",
-                    "command-r-plus",
-                    "command-r",
-                    "command"
-                ], {"default": "command-r-plus-08-2024"}),
+                    "command-a-translate",
+                    "command-a-reasoning",
+                    "command-a-vision",
+                    "aya-expanse-32b",
+                    "aya-expanse-8b",
+                    "aya-vision",
+                    "aya-translate"
+                ], {"default": "command-a-03-2025"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
 
@@ -546,11 +564,11 @@ class AceStepCohere_Lyrics:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Lyrics"
 
-    def generate(self, text, api_key, model, max_tokens):
+    def generate(self, text, api_key, model, max_tokens, seed):
         if not api_key:
             return ("Error: API key not provided",)
 
-        prompt = f"{text}\n\nGenerate song lyrics for this prompt:"
+        prompt = f"{text}\n\nGenerate song lyrics for this prompt:\n[Seed: {seed}]"
         
         try:
             headers = {
@@ -597,6 +615,7 @@ class AceStepReplicate_Lyrics:
                     "mistralai/mixtral-8x7b-instruct-v0.1"
                 ], {"default": "meta/llama-3.1-70b-instruct"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
 
@@ -605,11 +624,11 @@ class AceStepReplicate_Lyrics:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Lyrics"
 
-    def generate(self, text, api_key, model, max_tokens):
+    def generate(self, text, api_key, model, max_tokens, seed):
         if not api_key:
             return ("Error: API key not provided",)
 
-        prompt = f"{text}\n\nGenerate song lyrics for this prompt:"
+        prompt = f"{text}\n\nGenerate song lyrics for this prompt:\n[Seed: {seed}]"
         
         try:
             headers = {
@@ -645,14 +664,17 @@ class AceStepHuggingFace_Lyrics:
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "HuggingFace API Key"}),
                 "model": ([
                     "meta-llama/Llama-3.1-405B-Instruct",
+                    "meta-llama/Llama-3.3-70B-Instruct-Turbo",
                     "meta-llama/Llama-3.1-70B-Instruct",
-                    "mistralai/Mistral-7B-Instruct-v0.2",
+                    "mistralai/Mistral-Large",
+                    "microsoft/Phi-4",
                     "deepseek-ai/deepseek-v3",
-                    "qwen/Qwen2.5-72B-Instruct",
-                    "HuggingFaceH4/zephyr-7b-beta",
-                    "tiiuae/falcon-7b-instruct"
+                    "Qwen/Qwen2.5-72B-Instruct",
+                    "google/gemma-2-27b",
+                    "tiiuae/falcon-180b"
                 ], {"default": "meta-llama/Llama-3.1-70B-Instruct"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
 
@@ -661,11 +683,11 @@ class AceStepHuggingFace_Lyrics:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Lyrics"
 
-    def generate(self, text, api_key, model, max_tokens):
+    def generate(self, text, api_key, model, max_tokens, seed):
         if not api_key:
             return ("Error: API key not provided",)
 
-        prompt = f"{text}\n\nGenerate song lyrics for this prompt:"
+        prompt = f"{text}\n\nGenerate song lyrics for this prompt:\n[Seed: {seed}]"
         
         try:
             headers = {
@@ -703,16 +725,15 @@ class AceStepTogetherAI_Lyrics:
                     "meta-llama/Llama-3.3-70B-Instruct-Turbo",
                     "meta-llama/Llama-3.1-405B-Instruct-Turbo",
                     "meta-llama/Llama-3.1-70B-Instruct-Turbo",
-                    "meta-llama/Llama-3.1-8B-Instruct-Turbo",
                     "mistralai/Mistral-Small-24B-Instruct-2501",
-                    "mistralai/Ministral-3-8B-Instruct-2512",
-                    "deepseek-ai/DeepSeek-V3.1",
-                    "deepseek-ai/DeepSeek-R1",
-                    "Qwen/Qwen3-235B-A22B-Instruct-2507",
-                    "moonshotai/Kimi-K2-Instruct-0905",
-                    "google/gemma-3-27b-it"
+                    "Qwen/Qwen2.5-72B-Instruct",
+                    "deepseek-ai/DeepSeek-V3",
+                    "moonshotai/Kimi-K2-Instruct",
+                    "GLM-4-Plus",
+                    "Nous-Hermes-3-70B"
                 ], {"default": "meta-llama/Llama-3.3-70B-Instruct-Turbo"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
 
@@ -721,11 +742,11 @@ class AceStepTogetherAI_Lyrics:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Lyrics"
 
-    def generate(self, text, api_key, model, max_tokens):
+    def generate(self, text, api_key, model, max_tokens, seed):
         if not api_key:
             return ("Error: API key not provided",)
 
-        prompt = f"{text}\n\nGenerate song lyrics for this prompt:"
+        prompt = f"{text}\n\nGenerate song lyrics for this prompt:\n[Seed: {seed}]"
         
         try:
             headers = {
@@ -762,21 +783,22 @@ class AceStepFireworks_Lyrics:
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Fireworks API Key"}),
                 "model": ([
-                    "deepseek-ai/deepseek-v3p2",
+                    "deepseek-ai/deepseek-v3",
                     "deepseek-ai/deepseek-r1",
-                    "Qwen/Qwen3-235B-A22B-Instruct-2507",
-                    "Qwen/Qwen3-Next-80B-A3B-Instruct",
+                    "Qwen/Qwen3-235B-A22B-Instruct",
                     "Qwen/Qwen2.5-72B-Instruct-Turbo",
+                    "meta-llama/Llama-4-Maverick-17B",
+                    "meta-llama/Llama-4-Scout-17B",
                     "meta-llama/Llama-3.3-70B-Instruct",
                     "meta-llama/Llama-3.1-405B-Instruct",
-                    "meta-llama/Llama-3.1-70B-Instruct",
-                    "mistralai/Mistral-Large-3-675B-Instruct-2512",
+                    "mistralai/Mistral-Large-3-675B-Instruct",
                     "mistralai/Mistral-Small-24B-Instruct-2501",
-                    "mistralai/Mistral-Nemo-Instruct-2407",
-                    "mistralai/Mixtral-8x22B-Instruct",
-                    "zai-org/GLM-4.6"
+                    "google/GLM-4.6",
+                    "moonshotai/Kimi-K2",
+                    "google/Gemma-3-27b"
                 ], {"default": "meta-llama/Llama-3.3-70B-Instruct"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             }
         }
 
@@ -785,11 +807,11 @@ class AceStepFireworks_Lyrics:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Lyrics"
 
-    def generate(self, text, api_key, model, max_tokens):
+    def generate(self, text, api_key, model, max_tokens, seed):
         if not api_key:
             return ("Error: API key not provided",)
 
-        prompt = f"{text}\n\nGenerate song lyrics for this prompt:"
+        prompt = f"{text}\n\nGenerate song lyrics for this prompt:\n[Seed: {seed}]"
         
         try:
             headers = {
@@ -804,108 +826,6 @@ class AceStepFireworks_Lyrics:
 
             req = urllib.request.Request(
                 "https://api.fireworks.ai/inference/v1/chat/completions",
-                data=payload,
-                headers=headers,
-                method="POST"
-            )
-            
-            with urllib.request.urlopen(req) as response:
-                result = json.loads(response.read().decode())
-                lyrics = result["choices"][0]["message"]["content"]
-                return (lyrics,)
-        except Exception as e:
-            return (f"Error: {str(e)}",)
-
-
-class AceStepGemini_Lyrics:
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
-                "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Google Gemini API Key"}),
-                "model": (["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"], {"default": "gemini-2.5-flash"}),
-                "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 8000}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-            }
-        }
-
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("lyrics",)
-    FUNCTION = "generate"
-    CATEGORY = "JK AceStep Nodes/Lyrics"
-
-    def _build_prompt(self, text, seed):
-        return f"{text}\n\nGenerate song lyrics for this prompt.\n[Seed: {seed}]"
-
-    def generate(self, text, api_key, model, max_tokens, seed):
-        if not api_key:
-            return ("Error: API key not provided",)
-
-        prompt = self._build_prompt(text, seed)
-        
-        try:
-            payload = json.dumps({
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.7},
-            }).encode()
-
-            req = urllib.request.Request(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}",
-                data=payload,
-                headers={"Content-Type": "application/json"},
-                method="POST"
-            )
-            
-            with urllib.request.urlopen(req) as response:
-                result = json.loads(response.read().decode())
-                lyrics = result["candidates"][0]["content"]["parts"][0]["text"]
-                return (lyrics,)
-        except Exception as e:
-            return (f"Error: {str(e)}",)
-
-
-class AceStepGroq_Lyrics:
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
-                "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Groq API Key"}),
-                "model": (["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama-4-9b"], {"default": "llama-3.3-70b-versatile"}),
-                "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
-                "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-            }
-        }
-
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("lyrics",)
-    FUNCTION = "generate"
-    CATEGORY = "JK AceStep Nodes/Lyrics"
-
-    def _build_prompt(self, text, seed):
-        return f"{text}\n\nGenerate song lyrics for this prompt.\n[Seed: {seed}]"
-
-    def generate(self, text, api_key, model, max_tokens, seed):
-        if not api_key:
-            return ("Error: API key not provided",)
-
-        prompt = self._build_prompt(text, seed)
-        
-        try:
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            }
-            payload = json.dumps({
-                "model": model,
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": max_tokens,
-                "temperature": 0.7,
-            }).encode()
-
-            req = urllib.request.Request(
-                "https://api.groq.com/openai/v1/chat/completions",
                 data=payload,
                 headers=headers,
                 method="POST"

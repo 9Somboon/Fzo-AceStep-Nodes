@@ -5,6 +5,10 @@ from .ace_step_ksampler import NODE_CLASS_MAPPINGS as KSAMPLER_MAPPINGS, NODE_DI
 from .ace_step_prompt_gen import NODE_CLASS_MAPPINGS as PROMPT_MAPPINGS, NODE_DISPLAY_NAMES as PROMPT_NAMES
 from .gemini_nodes import NODE_CLASS_MAPPINGS as GEMINI_MAPPINGS, NODE_DISPLAY_NAMES as GEMINI_NAMES
 from .groq_nodes import NODE_CLASS_MAPPINGS as GROQ_MAPPINGS, NODE_DISPLAY_NAMES as GROQ_NAMES
+# DISABLED: optimization_nodes removed (torch.compile incompatibility)
+# from .optimization_nodes import NODE_CLASS_MAPPINGS as OPT_MAPPINGS, NODE_DISPLAY_NAMES as OPT_NAMES
+# DISABLED: torch_compile_node causes incompatibility with ACE-Step
+# from .torch_compile_node import NODE_CLASS_MAPPINGS as COMPILE_MAPPINGS, NODE_DISPLAY_NAMES as COMPILE_NAMES
 
 # Combine all node mappings
 NODE_CLASS_MAPPINGS = {**KSAMPLER_MAPPINGS, **PROMPT_MAPPINGS, **GEMINI_MAPPINGS, **GROQ_MAPPINGS}
@@ -15,11 +19,12 @@ def add_samplers():
     """Register custom samplers with ComfyUI KSampler."""
     try:
         from comfy.samplers import KSampler, k_diffusion_sampling
-        from .py.jkass_sampler import sample_jkass
+        from .py.jkass_sampler import sample_jkass_quality, sample_jkass_fast
         
         # Register Samplers
         for sampler_name, sampler_func in [
-            ("jkass", sample_jkass),
+            ("jkass_quality", sample_jkass_quality),
+            ("jkass_fast", sample_jkass_fast),
         ]:
             if sampler_name not in KSampler.SAMPLERS:
                 try:

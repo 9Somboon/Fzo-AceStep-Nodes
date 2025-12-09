@@ -29,11 +29,12 @@ class AceStepGroqLyrics:
                 ),
                 "model": (
                     [
-                        "llama-3.3-70b-versatile",      # Latest Llama model, great quality
-                        "llama-3.1-70b-versatile",      # Previous Llama version
-                        "llama-3.1-8b-instant",         # Faster, smaller model
-                        "mixtral-8x7b-32768",           # Mixtral model, good quality
-                        "gemma2-9b-it",                 # Google's Gemma model
+                        "llama-3.3-70b-versatile",      # Meta Llama 3.3 70B - Melhor qualidade
+                        "llama-3.1-8b-instant",         # Meta Llama 3.1 8B - Mais rápido e leve
+                        "openai/gpt-oss-120b",          # OpenAI GPT-OSS 120B - Muito poderoso
+                        "openai/gpt-oss-20b",           # OpenAI GPT-OSS 20B - Bom balanceamento
+                        "meta-llama/llama-4-scout-17b-16e-instruct",  # Llama 4 Scout (preview)
+                        "meta-llama/llama-4-maverick-17b-128e-instruct",  # Llama 4 Maverick (preview)
                     ],
                     {
                         "default": "llama-3.3-70b-versatile",

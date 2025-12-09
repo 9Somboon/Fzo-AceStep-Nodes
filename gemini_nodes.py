@@ -237,10 +237,10 @@ class AceStepSaveText:
         
         os.makedirs(folder_path, exist_ok=True)
         
+        # ComfyUI style: filename_0001, filename_0002, etc.
         index = 1
         while True:
-            suffix = "" if index == 1 else str(index)
-            filename = f"{filename_base}{suffix}.txt"
+            filename = f"{filename_base}_{index:04d}.txt"
             candidate = os.path.join(folder_path, filename)
             if not os.path.exists(candidate):
                 return candidate

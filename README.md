@@ -1,6 +1,6 @@
 # JK AceStep Nodes for ComfyUI
 
-Advanced nodes optimized for [ACE-Step](https://huggingface.co/ACE-Step/ACE-Step-v1-3.5B) audio generation in ComfyUI.
+Advanced nodes optimized for [ACE-Step](https://huggingface.co/Accusoft/ACE-Step) audio generation in ComfyUI.
 
 ## 📦 Installation
 
@@ -54,17 +54,30 @@ Text saver with auto-incremented filenames and folder support.
 
 **J**ust **K**eep **A**udio **S**ampling **S**imple - custom sampler optimized for audio generation.
 
+### Available Variants
+
+- **`jkass_quality`** - Second-order Heun method for maximum audio quality
+  - Superior accuracy and detail preservation
+  - Recommended for final renders
+  - ~2x slower than fast variant
+
+- **`jkass_fast`** - First-order Euler method for faster generation
+  - Optimized for speed with vectorized operations
+  - Good quality with reduced computation time
+  - Best for iterations and previews
+
+### Key Features
 - No noise normalization (preserves audio dynamics)
 - Clean sampling path (prevents word cutting/stuttering)
 - Optimized for long-form audio
 
-Select `jkass` from any sampler dropdown.
+Select your preferred variant from any sampler dropdown (default: `jkass_quality`).
 
 ---
 
 ## 📊 Recommended Settings
 
-- **Sampler:** `jkass`
+- **Sampler:** `jkass_quality` (for best quality) or `jkass_fast` (for speed)
 - **Scheduler:** `sgm_uniform`
 - **Steps:** 80-100
 - **CFG:** 4.0-4.5
@@ -82,9 +95,9 @@ Automatically tests multiple step counts to find optimal settings for your promp
 
 ## 🔧 Troubleshooting
 
-- **Word cutting/stuttering:** Use `jkass` sampler, disable advanced optimizations
+- **Word cutting/stuttering:** Use `jkass_quality` sampler, disable advanced optimizations
 - **Metallic voice:** Increase `anti_autotune_strength` to 0.3-0.4
-- **Poor quality:** Increase steps (80-120), use CFG 4.0-4.5, enable APG
+- **Poor quality:** Increase steps (80-120), use CFG 4.0-4.5, enable APG, try `jkass_quality` sampler
 
 ---
 

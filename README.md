@@ -89,7 +89,7 @@ High-speed lyrics generation using Groq API.
 - `llama-3.2-3b-preview` - Meta Llama 3.2 (small)
 - `llama-3.2-11b-vision-preview` - Meta Llama with vision
 - `llama-3.2-90b-vision-preview` - Large vision model
-- `mixtral-8x7b-32768` - Mistral mixture of experts
+- `meta-llama/llama-guard-3-8b` - Meta Llama Guard (safety)
 - `openai/gpt-oss-120b` - OpenAI OSS 120B
 - `openai/gpt-oss-20b` - OpenAI OSS 20B
 
@@ -272,7 +272,7 @@ JK-AceStep-Nodes/
 - **OpenAI** - gpt-4o, gpt-4-turbo, gpt-4, gpt-3.5-turbo, and more
 - **Anthropic Claude** - Claude 3.5 Sonnet, Claude 3 Opus/Sonnet/Haiku
 - **Google Gemini** - gemini-2.5-flash, gemini-2.5-pro, gemini-2.0-flash, gemini-1.5-pro/flash
-- **Groq** - Llama 3.3 70B, Llama 3.1 8B, Mixtral 8x7B, GPT-OSS (120B/20B), and preview models
+- **Groq** - Llama 3.3 70B, Llama 3.1 8B, Llama Guard 3, GPT-OSS (120B/20B), and Llama 4 preview models
 - **Perplexity** - Sonar, Sonar Pro, Sonar Reasoning (with 128k context)
 - **Cohere** - Command A/R+ (with reasoning & vision), Aya (multilingual)
 - **Replicate** - Llama 3.1 (405B/70B/8B), Mistral Small/Nemo, Mixtral

@@ -51,9 +51,11 @@ class AceStepGeminiLyrics:
                         "gemini-2.5-flash-lite",
                         "gemini-2.5-flash-lite-latest",
                         "gemini-2.5-pro",
-                        "gemini-3-pro-preview",
+                        "gemini-2.5-pro-latest",
                         "gemini-2.0-flash",
                         "gemini-2.0-flash-lite",
+                        "gemini-1.5-pro",
+                        "gemini-1.5-flash",
                     ],
                 ),
                 "max_tokens": (
@@ -210,8 +212,11 @@ class AceStepGroqLyrics:
                     [
                         "llama-3.3-70b-versatile",
                         "llama-3.1-8b-instant",
+                        "llama-3.2-1b-preview",
+                        "llama-3.2-3b-preview",
                         "openai/gpt-oss-120b",
                         "openai/gpt-oss-20b",
+                        "meta-llama/llama-guard-3-8b",
                         "meta-llama/llama-4-scout-17b-16e-instruct",
                         "meta-llama/llama-4-maverick-17b-128e-instruct",
                     ],
@@ -354,7 +359,15 @@ class AceStepOpenAI_Lyrics:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "OpenAI API Key"}),
-                "model": (["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"], {"default": "gpt-4o"}),
+                "model": ([
+                    "gpt-4o",
+                    "gpt-4o-mini",
+                    "gpt-4-turbo",
+                    "gpt-4-turbo-preview",
+                    "gpt-4",
+                    "gpt-3.5-turbo",
+                    "gpt-3.5-turbo-16k"
+                ], {"default": "gpt-4o"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
             }
         }
@@ -404,7 +417,14 @@ class AceStepClaude_Lyrics:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Anthropic API Key"}),
-                "model": (["claude-3-5-sonnet-20241022", "claude-3-opus-20240229", "claude-3-sonnet-20240229"], {"default": "claude-3-5-sonnet-20241022"}),
+                "model": ([
+                    "claude-3-5-sonnet-20241022",
+                    "claude-3-5-haiku-20241022",
+                    "claude-3-opus-20250219",
+                    "claude-3-sonnet-20240229",
+                    "claude-3-haiku-20240307",
+                    "claude-2.1"
+                ], {"default": "claude-3-5-sonnet-20241022"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
             }
         }
@@ -454,7 +474,12 @@ class AceStepPerplexity_Lyrics:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Perplexity API Key"}),
-                "model": (["llama-3.1-sonar-large-128k-online", "llama-3.1-sonar-small-128k-online"], {"default": "llama-3.1-sonar-large-128k-online"}),
+                "model": ([
+                    "sonar",
+                    "sonar-pro",
+                    "sonar-reasoning",
+                    "sonar-reasoning-pro"
+                ], {"default": "sonar"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
             }
         }
@@ -504,7 +529,14 @@ class AceStepCohere_Lyrics:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Cohere API Key"}),
-                "model": (["command-r-plus", "command-r", "command"], {"default": "command-r-plus"}),
+                "model": ([
+                    "command-r-plus-08-2024",
+                    "command-r-08-2024",
+                    "command-r7b-12-2024",
+                    "command-r-plus",
+                    "command-r",
+                    "command"
+                ], {"default": "command-r-plus-08-2024"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
             }
         }
@@ -554,7 +586,16 @@ class AceStepReplicate_Lyrics:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Replicate API Key"}),
-                "model": (["meta/llama-2-70b-chat", "mistralai/mistral-7b-instruct-v0.2"], {"default": "meta/llama-2-70b-chat"}),
+                "model": ([
+                    "meta/llama-3.1-405b-instruct",
+                    "meta/llama-3.1-70b-instruct",
+                    "meta/llama-3.1-8b-instruct",
+                    "meta/llama-3-70b-instruct",
+                    "meta/llama-2-70b-chat",
+                    "mistralai/mistral-7b-instruct-v0.3",
+                    "mistralai/mistral-small-24b-instruct-2501",
+                    "mistralai/mixtral-8x7b-instruct-v0.1"
+                ], {"default": "meta/llama-3.1-70b-instruct"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
             }
         }
@@ -602,7 +643,15 @@ class AceStepHuggingFace_Lyrics:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "HuggingFace API Key"}),
-                "model": (["mistralai/Mistral-7B-Instruct-v0.2", "meta-llama/Llama-2-7b-chat-hf"], {"default": "mistralai/Mistral-7B-Instruct-v0.2"}),
+                "model": ([
+                    "meta-llama/Llama-3.1-405B-Instruct",
+                    "meta-llama/Llama-3.1-70B-Instruct",
+                    "mistralai/Mistral-7B-Instruct-v0.2",
+                    "deepseek-ai/deepseek-v3",
+                    "qwen/Qwen2.5-72B-Instruct",
+                    "HuggingFaceH4/zephyr-7b-beta",
+                    "tiiuae/falcon-7b-instruct"
+                ], {"default": "meta-llama/Llama-3.1-70B-Instruct"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
             }
         }
@@ -650,7 +699,19 @@ class AceStepTogetherAI_Lyrics:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
                 "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Together AI API Key"}),
-                "model": (["meta-llama/Llama-3-70b-chat-hf", "mistralai/Mistral-7B-Instruct-v0.2"], {"default": "meta-llama/Llama-3-70b-chat-hf"}),
+                "model": ([
+                    "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+                    "meta-llama/Llama-3.1-405B-Instruct-Turbo",
+                    "meta-llama/Llama-3.1-70B-Instruct-Turbo",
+                    "meta-llama/Llama-3.1-8B-Instruct-Turbo",
+                    "mistralai/Mistral-Small-24B-Instruct-2501",
+                    "mistralai/Ministral-3-8B-Instruct-2512",
+                    "deepseek-ai/DeepSeek-V3.1",
+                    "deepseek-ai/DeepSeek-R1",
+                    "Qwen/Qwen3-235B-A22B-Instruct-2507",
+                    "moonshotai/Kimi-K2-Instruct-0905",
+                    "google/gemma-3-27b-it"
+                ], {"default": "meta-llama/Llama-3.3-70B-Instruct-Turbo"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
             }
         }
@@ -699,8 +760,22 @@ class AceStepFireworks_Lyrics:
         return {
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "", "placeholder": "Prompt for lyrics generation"}),
-                "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Fireworks AI API Key"}),
-                "model": (["accounts/fireworks/models/llama-v2-70b-chat", "accounts/fireworks/models/mistral-7b-instruct-v0.2"], {"default": "accounts/fireworks/models/llama-v2-70b-chat"}),
+                "api_key": ("STRING", {"multiline": False, "default": "", "placeholder": "Fireworks API Key"}),
+                "model": ([
+                    "deepseek-ai/deepseek-v3p2",
+                    "deepseek-ai/deepseek-r1",
+                    "Qwen/Qwen3-235B-A22B-Instruct-2507",
+                    "Qwen/Qwen3-Next-80B-A3B-Instruct",
+                    "Qwen/Qwen2.5-72B-Instruct-Turbo",
+                    "meta-llama/Llama-3.3-70B-Instruct",
+                    "meta-llama/Llama-3.1-405B-Instruct",
+                    "meta-llama/Llama-3.1-70B-Instruct",
+                    "mistralai/Mistral-Large-3-675B-Instruct-2512",
+                    "mistralai/Mistral-Small-24B-Instruct-2501",
+                    "mistralai/Mistral-Nemo-Instruct-2407",
+                    "mistralai/Mixtral-8x22B-Instruct",
+                    "zai-org/GLM-4.6"
+                ], {"default": "meta-llama/Llama-3.3-70B-Instruct"}),
                 "max_tokens": ("INT", {"default": 1024, "min": 1, "max": 4096}),
             }
         }

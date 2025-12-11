@@ -257,6 +257,34 @@ class AceStepPromptGen:
                     },
                 ),
             },
+            "optional": {
+                "voice_style": (
+                    [
+                        "none",
+                        "natural_female",
+                        "breathy_female",
+                        "powerful_female",
+                        "ethereal_female",
+                        "soulful_female",
+                        "deep_female",
+                        "natural_male",
+                        "breathy_male",
+                        "powerful_male",
+                        "deep_male",
+                        "soulful_male",
+                        "tenor_male",
+                        "baritone_male",
+                        "reference_singer",
+                        "androgynous",
+                        "vocal_blend",
+                        "robotic_vocal"
+                    ],
+                    {
+                        "default": "none",
+                        "tooltip": "Optional voice style hints that are appended to the prompt to improve vocal realism. Female (6 options), Male (6 options), Blended (2 options), Robotic (1), None (auto)."
+                    }
+                ),
+            },
         }
 
     RETURN_TYPES = ("STRING", "STRING")
@@ -264,12 +292,55 @@ class AceStepPromptGen:
     FUNCTION = "generate"
     CATEGORY = "JK AceStep Nodes/Prompt"
 
-    def generate(self, style: str, extra: str = ""):
+    def generate(self, style: str, extra: str = "", voice_style: str = "none"):
         template = STYLE_PROMPTS.get(style, "")
+        voice_hint = ""
+        
+        # FEMALE VOCALS (6 options)
+        if voice_style == "natural_female":
+            voice_hint = "natural female voice with micro pitch variation, soft breath, realistic vibrato and avoid robotic quantization"
+        elif voice_style == "breathy_female":
+            voice_hint = "breathy female voice, intimate mic proximity, audible breaths, warm vowel resonances, minimal autotune"
+        elif voice_style == "powerful_female":
+            voice_hint = "powerful female lead vocal, energetic performance, controlled vibrato, clear consonant articulation, live vocal tone"
+        elif voice_style == "ethereal_female":
+            voice_hint = "ethereal female voice, airy and light, floating above the beat, delicate phrasing, spacious reverb, dreamy quality"
+        elif voice_style == "soulful_female":
+            voice_hint = "soulful female voice, rich emotional depth, warm tone, blues influences, expressive phrasing, powerful presence"
+        elif voice_style == "deep_female":
+            voice_hint = "deep female mezzo-soprano voice, lower register, sultry tone, sophisticated delivery, jazz influences"
+        
+        # MALE VOCALS (6 options)
+        elif voice_style == "natural_male":
+            voice_hint = "natural male voice with micro pitch variation and natural prosody, warm tone, realistic breath"
+        elif voice_style == "breathy_male":
+            voice_hint = "breathy male voice, intimate vocal delivery, audible breath texture, vulnerable performance, close-mic warmth"
+        elif voice_style == "powerful_male":
+            voice_hint = "powerful male lead vocal, strong projection, controlled vibrato, clear articulation, commanding presence"
+        elif voice_style == "deep_male":
+            voice_hint = "deep male baritone-bass voice, rich resonance, lower register dominance, warm sonority, authoritative tone"
+        elif voice_style == "soulful_male":
+            voice_hint = "soulful male voice, emotional depth, R&B influences, smooth phrasing, expressive delivery, warm presence"
+        elif voice_style == "tenor_male":
+            voice_hint = "bright tenor male voice, soaring high notes, clear articulation, pop sensibility, energetic performance"
+        
+        # BLENDED VOCALS (2 options)
+        elif voice_style == "reference_singer":
+            voice_hint = "use a reference lead singer performance: natural, human vocal delivery, no robotic artifacts"
+        elif voice_style == "androgynous":
+            voice_hint = "androgynous voice quality, neutral gender presentation, balanced tone between male and female characteristics"
+        elif voice_style == "vocal_blend":
+            voice_hint = "layered vocal blend with multiple voices, rich harmonic texture, complementary vocal ranges, ensemble quality"
+        # ROBOTIC VOCAL
+        elif voice_style == "robotic_vocal":
+            voice_hint = "robotic vocal style, vocoder or autotune effect, synthetic timbre, precise pitch, electronic articulation, minimal human expressiveness, classic EDM/Daft Punk/house vocal texture"
+        
+        parts = [template] if template else []
         if extra.strip():
-            final_prompt = f"{template}. {extra.strip()}"
-        else:
-            final_prompt = template
+            parts.append(extra.strip())
+        if voice_hint:
+            parts.append(voice_hint)
+        final_prompt = ". ".join(parts)
         return (final_prompt, template)
 
 

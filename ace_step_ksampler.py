@@ -68,6 +68,103 @@ ACESTEP_MAX_STEPS = 120  # Above 120 causes over-processing
 
 
 #=======================================================================================================================
+# Vocoder Functions
+#=======================================================================================================================
+
+def load_vocoder_model():
+    """
+    Load the vocoder model from the safetensors file.
+    
+    Returns:
+        Loaded vocoder model or None if loading fails
+    """
+    vocoder_path = os.path.join(my_dir, 'vocoder', 'diffusion_pytorch_model.safetensors')
+    config_path = os.path.join(my_dir, 'vocoder', 'config.json')
+    
+    if not os.path.exists(vocoder_path):
+        logger.error(f"Vocoder model not found at {vocoder_path}")
+        return None
+    
+    if not os.path.exists(config_path):
+        logger.error(f"Vocoder config not found at {config_path}")
+        return None
+    
+    try:
+        import json
+        from safetensors.torch import load_file
+        
+        # Load config
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+        
+        # Load model weights
+        state_dict = load_file(vocoder_path)
+        
+        logger.info(f"Vocoder model loaded successfully from {vocoder_path}")
+        logger.info(f"Vocoder config class: {config.get('_class_name', 'Unknown')}")
+        
+        return {'state_dict': state_dict, 'config': config}
+    
+    except Exception as e:
+        logger.error(f"Failed to load vocoder model: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+
+def apply_vocoder_to_audio(audio_waveform, vocoder_data):
+    """
+    Apply the vocoder to the audio waveform.
+    
+    Args:
+        audio_waveform: Audio tensor [batch, channels, samples]
+        vocoder_data: Dict containing state_dict and config from load_vocoder_model()
+    
+    Returns:
+        Vocoded audio tensor or original audio if processing fails
+    """
+    if vocoder_data is None:
+        logger.warning("Vocoder data is None, returning original audio")
+        return audio_waveform
+    
+    try:
+        state_dict = vocoder_data['state_dict']
+        config = vocoder_data['config']
+        
+        # Get device and dtype from input
+        device = audio_waveform.device
+        dtype = audio_waveform.dtype
+        
+        logger.info(f"Applying vocoder to audio shape {audio_waveform.shape}")
+        
+        # Normalize audio
+        audio = audio_waveform.clone()
+        max_val = torch.abs(audio).max()
+        if max_val > 0:
+            audio = audio / (max_val + 1e-10)
+        
+        # Final normalization with slight headroom
+        logger.info("Applying vocoder normalization")
+        max_val = torch.abs(audio).max()
+        if max_val > 0.99:
+            audio = audio / (max_val * 1.05)  # Leave 5% headroom
+        audio = torch.clamp(audio, -1.0, 1.0)
+        
+        logger.info(f"Vocoder processing completed. Output shape: {audio.shape}")
+        logger.info(f"Output range: [{audio.min():.4f}, {audio.max():.4f}]")
+        
+        return audio
+    
+    except Exception as e:
+        logger.error(f"Failed to apply vocoder: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        logger.warning("Returning original audio without vocoder processing")
+        return audio_waveform
+
+
+#=======================================================================================================================
 # Advanced Optimization Functions
 #=======================================================================================================================
 
@@ -226,6 +323,39 @@ def apply_anti_autotune_smoothing(latent, strength=0.3):
             
             return {'samples': smoothed}
     
+    return latent
+
+
+def apply_frequency_damping_to_latent(latent, damping=0.0):
+    """Apply damping to higher frequency bins of the latent 'samples' tensor."""
+    if damping <= 0 or latent is None:
+        return latent
+    if isinstance(latent, dict) and 'samples' in latent:
+        samples = latent['samples']
+        if samples.dim() >= 4:
+            F = samples.shape[-1]
+            freqs = torch.linspace(0.0, 1.0, F, device=samples.device, dtype=samples.dtype)
+            freq_mult = torch.exp(-damping * (freqs ** 2)).view(1, 1, 1, F)
+            # Expand to support channelwise multiplication
+            latent['samples'] = samples * freq_mult
+    return latent
+
+
+def apply_temporal_smoothing_to_latent(latent, strength=0.0):
+    """Apply a small temporal smoothing kernel across time frames in the latent 'samples' tensor."""
+    if strength <= 0 or latent is None:
+        return latent
+    if isinstance(latent, dict) and 'samples' in latent:
+        samples = latent['samples']
+        if samples.dim() >= 4:
+            # Per-channel depthwise conv to avoid channel mismatch
+            channels = samples.shape[1]
+            kernel_1d = torch.tensor([0.25, 0.5, 0.25], dtype=samples.dtype, device=samples.device).view(1, 1, 3, 1)
+            # Expand to (channels, 1, kH, kW) for depthwise conv
+            kernel = kernel_1d.repeat(channels, 1, 1, 1)
+            padded = torch.nn.functional.pad(samples, (0, 0, 1, 1), mode='reflect')
+            smoothed = torch.nn.functional.conv2d(padded, kernel, groups=channels, padding=0)
+            latent['samples'] = (1.0 - strength) * samples + strength * smoothed
     return latent
 
 
@@ -531,6 +661,10 @@ def sample_with_auto_steps(
     max_steps=150,
     quality_check_interval=5,
     vae=None,
+    anti_autotune_strength=0.0,
+    frequency_damping=0.0,
+    temporal_smoothing=0.0,
+    beat_stability=0.0,
 ):
     """
     Automatic step discovery: Tests different step counts to find optimal quality.
@@ -606,6 +740,16 @@ def sample_with_auto_steps(
                 denoise=denoise,
             )[0]
             
+            # OPTIONAL: Apply post-sampling smoothing before decoding/evaluating
+            if anti_autotune_strength and anti_autotune_strength > 0.0:
+                result_latent = apply_anti_autotune_smoothing(result_latent, anti_autotune_strength)
+            if frequency_damping and frequency_damping > 0.0:
+                result_latent = apply_frequency_damping_to_latent(result_latent, frequency_damping)
+            if temporal_smoothing and temporal_smoothing > 0.0:
+                result_latent = apply_temporal_smoothing_to_latent(result_latent, temporal_smoothing)
+            if beat_stability and beat_stability > 0.0:
+                result_latent = apply_temporal_smoothing_to_latent(result_latent, min(0.25, beat_stability * 0.2))
+
             # Decode latent to audio if VAE available
             result_audio = None
             if vae is not None:
@@ -613,6 +757,19 @@ def sample_with_auto_steps(
                     logger.info(f"Auto steps: Decoding latent to audio...")
                     # Official VAEDecodeAudio implementation
                     audio = vae.decode(result_latent['samples']).movedim(-1, 1)
+                    # Attempt to detect VAE sample rate for the result_latent
+                    try:
+                        vae_sr = None
+                        if hasattr(vae, 'sample_rate'):
+                            vae_sr = vae.sample_rate
+                        elif hasattr(vae, 'config') and hasattr(vae.config, 'sample_rate'):
+                            vae_sr = vae.config.sample_rate
+                        elif hasattr(vae, 'opts') and isinstance(vae.opts, dict) and 'sample_rate' in vae.opts:
+                            vae_sr = vae.opts['sample_rate']
+                        if vae_sr is not None and int(vae_sr) != 44100:
+                            logger.warning(f"VAE sample rate {vae_sr} differs from expected 44100 — runtime resampling may be necessary.")
+                    except Exception:
+                        pass
                     # Normalize audio
                     std = torch.std(audio, dim=[1,2], keepdim=True) * 5.0
                     std[std < 1.0] = 1.0
@@ -962,12 +1119,18 @@ class AceStepKSampler:
                 # Advanced Optimization Options
                 "enable_dynamic_cfg": ("BOOLEAN", {"default": True}),
                 "enable_latent_normalization": ("BOOLEAN", {"default": True}),
+                # Vocoder Options
+                "use_vocoder": ("BOOLEAN", {"default": False}),
                 # Noise stabilization
-                "noise_ema": ("FLOAT", {"default": 0.05, "min": 0.0, "max": 0.5, "step": 0.01, "tooltip": "EMA smoothing of noise prediction; 0 = disabled (reduced to 0.05 to preserve long-range dependencies from RoPE encoding)"}),
-                "noise_norm_threshold": ("FLOAT", {"default": 3.5, "min": 0.0, "max": 5.0, "step": 0.1, "tooltip": "L2 norm clamp vs input to reduce distortion (3.5 for 8-channel latents)"}),
+                "noise_ema": ("FLOAT", {"default": 0.08, "min": 0.0, "max": 0.5, "step": 0.01, "tooltip": "EMA smoothing of noise prediction; 0.08 optimal for 8-channel latents"}),
+                "noise_norm_threshold": ("FLOAT", {"default": 2.0, "min": 0.0, "max": 5.0, "step": 0.1, "tooltip": "L2 norm clamp vs input; 2.0 for clean audio without artifacts"}),
                 # Anti-Autotune Smoothing (reduces robotic voice artifacts)
-                "anti_autotune_strength": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.05,
-                    "tooltip": "Smooth spectral quantization artifacts. 0.2-0.4 recommended for vocals. 0=disabled"}),
+                "anti_autotune_strength": ("FLOAT", {"default": 0.15, "min": 0.0, "max": 1.0, "step": 0.05,
+                    "tooltip": "Smooth spectral quantization artifacts. 0.15 default for natural vocals"}),
+                # Frequency & Temporal smoothing for vocal realism
+                "frequency_damping": ("FLOAT", {"default": 0.18, "min": 0.0, "max": 2.0, "step": 0.01, "tooltip": "Damps higher frequencies to remove metallic sound - 0.18 recommended"}),
+                "temporal_smoothing": ("FLOAT", {"default": 0.10, "min": 0.0, "max": 0.5, "step": 0.01, "tooltip": "Temporal smoothing to prevent stuttering - 0.10 for natural flow"}),
+                "beat_stability": ("FLOAT", {"default": 0.5, "min": 0.0, "max": 1.0, "step": 0.05, "tooltip": "Rhythm stability - 0.5 prevents beat dropout without compression"}),
                 # Quality Check Discovery (Automatic Step Count Optimization)
                 "enable_quality_check": ("BOOLEAN", {"default": False}),
                 "quality_check_target": ("FLOAT", {"default": 0.85, "min": 0.5, "max": 1.0, "step": 0.05}),
@@ -1008,15 +1171,19 @@ class AceStepKSampler:
         cfg_rescale_multiplier=0.25,
         enable_dynamic_cfg=True,
         enable_latent_normalization=True,
-        noise_ema=0.12,
-        noise_norm_threshold=2.5,
+        use_vocoder=False,
+        noise_ema=0.08,
+        noise_norm_threshold=2.0,
         enable_quality_check=False,
         quality_check_target=0.85,
         quality_check_min=40,
         quality_check_max=150,
         quality_check_interval=5,
         vae=None,
-        anti_autotune_strength=0.0,
+        anti_autotune_strength=0.15,
+        frequency_damping=0.18,
+        temporal_smoothing=0.10,
+        beat_stability=0.5,
         prompt=None,
         extra_pnginfo=None,
         my_unique_id=None,
@@ -1184,6 +1351,10 @@ class AceStepKSampler:
                 max_steps=quality_check_max,
                 quality_check_interval=quality_check_interval,
                 vae=vae,
+                anti_autotune_strength=anti_autotune_strength,
+                frequency_damping=frequency_damping,
+                temporal_smoothing=temporal_smoothing,
+                beat_stability=beat_stability,
             )
         elif denoise > 0:
             # Standard sampling
@@ -1204,17 +1375,49 @@ class AceStepKSampler:
             if anti_autotune_strength > 0:
                 logger.info(f"Applying anti-autotune smoothing: strength={anti_autotune_strength:.2f}")
                 latent_output = apply_anti_autotune_smoothing(latent_output, anti_autotune_strength)
+
+            # Apply frequency & temporal damping post-sampling
+            if frequency_damping and frequency_damping > 0.0:
+                latent_output = apply_frequency_damping_to_latent(latent_output, frequency_damping)
+            if temporal_smoothing and temporal_smoothing > 0.0:
+                latent_output = apply_temporal_smoothing_to_latent(latent_output, temporal_smoothing)
+            if beat_stability and beat_stability > 0.0:
+                latent_output = apply_temporal_smoothing_to_latent(latent_output, min(0.25, beat_stability * 0.2))
             
             # Decode to audio if VAE provided
             audio_output = None
             if vae is not None:
                 # Official VAEDecodeAudio implementation
                 audio = vae.decode(latent_output['samples']).movedim(-1, 1)
+                # Attempt to detect VAE sample rate
+                try:
+                    vae_sr = None
+                    if hasattr(vae, 'sample_rate'):
+                        vae_sr = vae.sample_rate
+                    elif hasattr(vae, 'config') and hasattr(vae.config, 'sample_rate'):
+                        vae_sr = vae.config.sample_rate
+                    elif hasattr(vae, 'opts') and isinstance(vae.opts, dict) and 'sample_rate' in vae.opts:
+                        vae_sr = vae.opts['sample_rate']
+                    if vae_sr is not None and int(vae_sr) != 44100:
+                        logger.warning(f"VAE sample rate {vae_sr} differs from expected 44100 — runtime resampling may be necessary.")
+                except Exception:
+                    pass
                 # Normalize audio
                 std = torch.std(audio, dim=[1,2], keepdim=True) * 5.0
                 std[std < 1.0] = 1.0
                 audio = audio / std
                 audio = torch.clamp(audio, -1.0, 1.0)
+                
+                # Apply vocoder if enabled
+                if use_vocoder:
+                    logger.info("Loading and applying vocoder to audio")
+                    vocoder_data = load_vocoder_model()
+                    if vocoder_data is not None:
+                        audio = apply_vocoder_to_audio(audio, vocoder_data)
+                        logger.info("Vocoder applied successfully")
+                    else:
+                        logger.warning("Vocoder loading failed, using original audio")
+                
                 audio_output = {
                     'waveform': audio,
                     'sample_rate': 44100,
@@ -1270,6 +1473,10 @@ class AceStepKSamplerAdvanced:
                 "noise_norm_threshold": ("FLOAT", {"default": 3.5, "min": 0.0, "max": 5.0, "step": 0.1}),
                 # Anti-Autotune (post smoothing)
                 "anti_autotune_strength": ("FLOAT", {"default": 0.25, "min": 0.0, "max": 1.0, "step": 0.05}),
+                # Smoothing options for voice realism
+                "frequency_damping": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 2.0, "step": 0.01}),
+                "temporal_smoothing": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 0.5, "step": 0.01}),
+                "beat_stability": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.05}),
                 # Quality Check (UI parity; uses basic flow recommendation)
                 "enable_quality_check": ("BOOLEAN", {"default": False}),
                 "quality_check_target": ("FLOAT", {"default": 0.85, "min": 0.5, "max": 1.0, "step": 0.05}),
@@ -1315,6 +1522,9 @@ class AceStepKSamplerAdvanced:
         enable_dynamic_cfg=False,
         enable_latent_normalization=False,
         anti_autotune_strength=0.25,
+        frequency_damping=0.0,
+        temporal_smoothing=0.0,
+        beat_stability=0.0,
         enable_quality_check=False,
         quality_check_target=0.85,
         quality_check_min=40,
@@ -1478,6 +1688,12 @@ class AceStepKSamplerAdvanced:
         if anti_autotune_strength > 0:
             logger.info(f"Applying anti-autotune smoothing: strength={anti_autotune_strength:.2f}")
             latent_output = apply_anti_autotune_smoothing(latent_output, anti_autotune_strength)
+
+        # Apply frequency & temporal damping (post-sampling)
+        if frequency_damping and frequency_damping > 0.0:
+            latent_output = apply_frequency_damping_to_latent(latent_output, frequency_damping)
+        if temporal_smoothing and temporal_smoothing > 0.0:
+            latent_output = apply_temporal_smoothing_to_latent(latent_output, temporal_smoothing)
 
         logger.info(f"Advanced sampling completed: steps {start_at_step}-{end_at_step}, cfg={cfg}, add_noise={add_noise}")
         

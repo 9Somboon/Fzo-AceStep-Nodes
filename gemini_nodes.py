@@ -35,12 +35,13 @@ class AceStepGeminiLyrics:
                 ),
                 "model": (
                     [
+                        "gemini-3-flash-preview",
+                        "gemini-3-pro-preview",
                         "gemini-2.5-flash",           # current main flash (low cost/free tier eligible)
                         "gemini-2.5-flash-latest",
                         "gemini-2.5-flash-lite",      # fastest/cheapest
                         "gemini-2.5-flash-lite-latest",
                         "gemini-2.5-pro",             # higher quality, paid
-                        "gemini-3-pro-preview",       # newest preview, may require billing
                         "gemini-2.0-flash",           # older stable
                         "gemini-2.0-flash-lite",      # older lite
                     ],
